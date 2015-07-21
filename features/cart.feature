@@ -22,6 +22,7 @@ Scenario: Add a 10 dollar item to a cart with a 5 dollar item
 Scenario: Apply a 10 percent coupon code to a cart with 10 dollars of items
   Given I have a cart with a "10" dollar item named "shirt"
   When I apply a "10" percent coupon code
+  And I check my items cart
   Then My subtotal should be "9" dollars
 
 Scenario: Add a 2nd item to a cart after applying a discount
