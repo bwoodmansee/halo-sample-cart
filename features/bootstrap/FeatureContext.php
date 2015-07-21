@@ -9,6 +9,7 @@ use Behat\Gherkin\Node\PyStringNode,
 use PHPUnit_Framework_Assert as Assert;
 use Hautelook\Cart;
 use Hautelook\Product;
+use Hautelook\Promotion;
 
 /**
  * Features context.
@@ -16,6 +17,9 @@ use Hautelook\Product;
 class FeatureContext extends BehatContext
 {
 
+    /**
+     * @var Cart $cart
+     */
     private $cart;
 
     /**
@@ -41,7 +45,7 @@ class FeatureContext extends BehatContext
      */
     public function mySubtotalShouldBeDollars($subtotal)
     {
-        Assert::assertEquals($subtotal, $this->cart->subtotal());
+        Assert::assertEquals($subtotal, $this->cart->getSubTotal());
     }
 
     /**
@@ -49,7 +53,8 @@ class FeatureContext extends BehatContext
      */
     public function iAddADollarItemNamed($dollars, $product_name)
     {
-        throw new PendingException();
+        $product = new Product($product_name, $dollars);
+        $this->cart->addProduct($product);
     }
     
     /**
@@ -57,7 +62,8 @@ class FeatureContext extends BehatContext
      */
     public function iAddADollarItemWithWeight($dollars, $lb, $product_name)
     {
-        throw new PendingException();
+        $product = new Product($product_name, $dollars, $lb);
+        $this->cart->addProduct($product);
     }
     
     /**
@@ -65,7 +71,7 @@ class FeatureContext extends BehatContext
      */
     public function myTotalShouldBeDollars($total)
     {
-        throw new PendingException();
+        Assert::assertEquals($total, $this->cart->getTotal());
     }
 
     /**
@@ -73,7 +79,13 @@ class FeatureContext extends BehatContext
      */
     public function myQuantityOfProductsShouldBe($product_name, $quantity)
     {
-        throw new PendingException();
+        $qtyProducts = 0;
+        foreach($this->cart->getProducts() as $product) {
+            if ($product->getName() === $product_name) {
+                $qtyProducts++;
+            }
+        }
+        Assert::assertEquals($quantity, $qtyProducts);
     }
     
 
@@ -82,7 +94,9 @@ class FeatureContext extends BehatContext
      */
     public function iHaveACartWithADollarItem($item_cost, $product_name)
     {
-        throw new PendingException();
+        $this->cart = new Cart();
+        $product = new Product($product_name, $item_cost);
+        $this->cart->addProduct($product);
     }
 
     /**
@@ -90,7 +104,8 @@ class FeatureContext extends BehatContext
      */
     public function iApplyAPercentCouponCode($discount)
     {
-        throw new PendingException();
+        $promotion = new Promotion($discount);
+        $this->cart->addPromotion($promotion);
     }
 
     /**
@@ -98,6 +113,7 @@ class FeatureContext extends BehatContext
      */
     public function myCartShouldHaveItems($item_count)
     {
-        throw new PendingException();
+        $qtyProducts = $this->cart->getNumberOfProducts();
+        Assert::assertEquals($item_count, $qtyProducts);
     }
 }
