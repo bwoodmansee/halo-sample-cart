@@ -8,13 +8,20 @@ use Behat\Gherkin\Node\PyStringNode,
     Behat\Gherkin\Node\TableNode;
 use PHPUnit_Framework_Assert as Assert;
 use Hautelook\Cart;
+use Hautelook\Product;
+
+//
+// Require 3rd-party libraries here:
+//
+//   require_once 'PHPUnit/Autoload.php';
+//   require_once 'PHPUnit/Framework/Assert/Functions.php';
+//
 
 /**
  * Features context.
  */
 class FeatureContext extends BehatContext
 {
-
     private $cart;
 
     /**
@@ -25,6 +32,7 @@ class FeatureContext extends BehatContext
      */
     public function __construct(array $parameters)
     {
+        $this->cart = new Cart();
     }
 
     /**
@@ -32,7 +40,7 @@ class FeatureContext extends BehatContext
      */
     public function iHaveAnEmptyCart()
     {
-        $this->cart = new Cart();
+        Assert::assertEquals($this->cart, new Cart());
     }
 
     /**
@@ -48,40 +56,29 @@ class FeatureContext extends BehatContext
      */
     public function iAddADollarItemNamed($dollars, $product_name)
     {
-        throw new PendingException();
+        $item = new Product($product_name, $dollars);
+        $this->cart->addProduct($item);
+        // throw new PendingException();
     }
-    
+
     /**
-     * @When /^I add a "([^"]*)" dollar "([^"]*)" lb item named "([^"]*)"$/
+     * @Given /^I have a cart with a "([^"]*)" dollar item named "([^"]*)"$/
      */
-    public function iAddADollarItemWithWeight($dollars, $lb, $product_name)
-    {
-        throw new PendingException();
-    }
-    
-    /**
-     * @Then /^My total should be "([^"]*)" dollars$/
-     */
-    public function myTotalShouldBeDollars($total)
-    {
-        throw new PendingException();
+    public function iHaveACartWithADollarItemNamed($item_cost, $product_name)
+    { 
+        $item = new Product($product_name, $item_cost);
+        $this->cart->addProduct($item);
+        // throw new PendingException();
     }
 
     /**
      * @Then /^My quantity of products named "([^"]*)" should be "([^"]*)"$/
      */
-    public function myQuantityOfProductsShouldBe($product_name, $quantity)
+    public function myQuantityOfProductsNamedShouldBe($product_name, $quantity)
     {
-        throw new PendingException();
-    }
-    
-
-    /**
-     * @Given /^I have a cart with a "([^"]*)" dollar item named "([^"]*)"$/
-     */
-    public function iHaveACartWithADollarItem($item_cost, $product_name)
-    {
-        throw new PendingException();
+        $item = $this->cart->getItems($product_name);
+        Assert::assertEquals($quantity, $item->qty);
+        // throw new PendingException();
     }
 
     /**
@@ -89,14 +86,27 @@ class FeatureContext extends BehatContext
      */
     public function iApplyAPercentCouponCode($discount)
     {
-        throw new PendingException();
+        $this->cart->applyDiscount($discount);
+        // throw new PendingException();
     }
 
     /**
-     * @Then /^My cart should have "([^"]*)" item\(s\)$/
+     * @When /^I add a "([^"]*)" dollar "([^"]*)" lb item named "([^"]*)"$/
      */
-    public function myCartShouldHaveItems($item_count)
+    public function iAddADollarLbItemNamed($dollar, $lb, $product_name)
+    { 
+        // die(chr(10));
+        $item = new Product($product_name, $dollar, $lb);
+        $this->cart->addProduct($item);
+        // throw new PendingException();
+    }
+
+    /**
+     * @Given /^My total should be "([^"]*)" dollars$/
+     */
+    public function myTotalShouldBeDollars($total)
     {
-        throw new PendingException();
+        Assert::assertEquals($total, $this->cart->total());
+        // throw new PendingException();
     }
 }
