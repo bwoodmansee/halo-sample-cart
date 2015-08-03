@@ -6,8 +6,11 @@ use Behat\Behat\Context\ClosuredContextInterface,
     Behat\Behat\Exception\PendingException;
 use Behat\Gherkin\Node\PyStringNode,
     Behat\Gherkin\Node\TableNode;
+use Behat\Behat\Context\Step\Given,
+   Behat\Behat\Context\Step\When;
 use PHPUnit_Framework_Assert as Assert;
 use Hautelook\Cart;
+use Hautelook\Product;
 
 /**
  * Features context.
@@ -47,8 +50,8 @@ class FeatureContext extends BehatContext
      * @When /^I add a "([^"]*)" dollar item named "([^"]*)"$/
      */
     public function iAddADollarItemNamed($dollars, $product_name)
-    {
-        throw new PendingException();
+    {  
+        $this->cart->add(new Product($product_name, $dollars));
     }
     
     /**
@@ -56,7 +59,7 @@ class FeatureContext extends BehatContext
      */
     public function iAddADollarItemWithWeight($dollars, $lb, $product_name)
     {
-        throw new PendingException();
+        $this->cart->add(new Product($product_name, $dollars, $lb));
     }
     
     /**
@@ -64,7 +67,7 @@ class FeatureContext extends BehatContext
      */
     public function myTotalShouldBeDollars($total)
     {
-        throw new PendingException();
+        Assert::assertEquals($total, $this->cart->total($total));
     }
 
     /**
@@ -72,7 +75,7 @@ class FeatureContext extends BehatContext
      */
     public function myQuantityOfProductsShouldBe($product_name, $quantity)
     {
-        throw new PendingException();
+        Assert::assertEquals($quantity, $this->cart->getQuantity($product_name));
     }
     
 
@@ -81,7 +84,10 @@ class FeatureContext extends BehatContext
      */
     public function iHaveACartWithADollarItem($item_cost, $product_name)
     {
-        throw new PendingException();
+       return array(
+         new Given("I have an empty cart"),
+         new When("I add a \"{$item_cost}\" dollar item named \"{$product_name}\"")
+       );
     }
 
     /**
@@ -89,7 +95,7 @@ class FeatureContext extends BehatContext
      */
     public function iApplyAPercentCouponCode($discount)
     {
-        throw new PendingException();
+        $this->cart->setDiscount($discount/100);
     }
 
     /**
