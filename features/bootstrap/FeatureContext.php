@@ -43,12 +43,17 @@ class FeatureContext extends BehatContext
         Assert::assertEquals($subtotal, $this->cart->subtotal());
     }
 
+
     /**
      * @When /^I add a "([^"]*)" dollar item named "([^"]*)"$/
      */
     public function iAddADollarItemNamed($dollars, $product_name)
     {
-        throw new PendingException();
+        $old_count = $this->cart->getCartCount();
+
+        $new_count = $this->cart->addItem($dollars, $product_name);
+
+        Assert::assertEquals($new_count - $old_count, 1);
     }
     
     /**
@@ -56,7 +61,11 @@ class FeatureContext extends BehatContext
      */
     public function iAddADollarItemWithWeight($dollars, $lb, $product_name)
     {
-        throw new PendingException();
+        $old_count = $this->cart->getCartCount();
+
+        $new_count = $this->cart->addItem($dollars, $product_name, $lb);
+
+        Assert::assertEquals($new_count - $old_count, 1);
     }
     
     /**
@@ -64,7 +73,7 @@ class FeatureContext extends BehatContext
      */
     public function myTotalShouldBeDollars($total)
     {
-        throw new PendingException();
+        Assert::assertEquals($total, $this->cart->getTotal());
     }
 
     /**
@@ -72,9 +81,8 @@ class FeatureContext extends BehatContext
      */
     public function myQuantityOfProductsShouldBe($product_name, $quantity)
     {
-        throw new PendingException();
+         Assert::assertEquals($this->cart->getCountOfProduct($product_name), $quantity);
     }
-    
 
     /**
      * @Given /^I have a cart with a "([^"]*)" dollar item named "([^"]*)"$/
@@ -89,7 +97,7 @@ class FeatureContext extends BehatContext
      */
     public function iApplyAPercentCouponCode($discount)
     {
-        throw new PendingException();
+        Assert::assertEquals($this->getDiscountedTotal($discount), $this->cart->applyDiscount($discount));
     }
 
     /**
@@ -98,5 +106,21 @@ class FeatureContext extends BehatContext
     public function myCartShouldHaveItems($item_count)
     {
         throw new PendingException();
+    }
+
+    private function getDiscountedTotal($discount) {
+        $items = $this->cart->getItems();
+
+        $discounted_cost = 0;
+
+        foreach($items as $item) {
+            $new_cost = $item['cost'] - ($item['cost'] * ($discount * .01));
+
+            $discounted_cost += $new_cost;
+
+            $item['cost'] = $new_cost;
+        }
+
+        return $new_cost;
     }
 }
