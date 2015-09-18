@@ -48,7 +48,7 @@ class FeatureContext extends BehatContext
      */
     public function iAddADollarItemNamed($dollars, $product_name)
     {
-        throw new PendingException();
+        $this->cart->add_product( $product_name, $dollars );
     }
     
     /**
@@ -56,7 +56,7 @@ class FeatureContext extends BehatContext
      */
     public function iAddADollarItemWithWeight($dollars, $lb, $product_name)
     {
-        throw new PendingException();
+        $this->cart->add_product( $product_name, $dollars, $lb );
     }
     
     /**
@@ -64,7 +64,7 @@ class FeatureContext extends BehatContext
      */
     public function myTotalShouldBeDollars($total)
     {
-        throw new PendingException();
+        Assert::assertEquals($total, $this->cart->total());
     }
 
     /**
@@ -72,7 +72,7 @@ class FeatureContext extends BehatContext
      */
     public function myQuantityOfProductsShouldBe($product_name, $quantity)
     {
-        throw new PendingException();
+        Assert::assertEquals($quantity, $this->cart->get_quantity($product_name));
     }
     
 
@@ -81,7 +81,8 @@ class FeatureContext extends BehatContext
      */
     public function iHaveACartWithADollarItem($item_cost, $product_name)
     {
-        throw new PendingException();
+        $this->cart = new Cart();
+        $this->cart->add_product($product_name, $item_cost);
     }
 
     /**
@@ -89,7 +90,7 @@ class FeatureContext extends BehatContext
      */
     public function iApplyAPercentCouponCode($discount)
     {
-        throw new PendingException();
+        $this->cart->apply_coupon($discount);
     }
 
     /**
