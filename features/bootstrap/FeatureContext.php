@@ -8,13 +8,16 @@ use Behat\Gherkin\Node\PyStringNode,
     Behat\Gherkin\Node\TableNode;
 use PHPUnit_Framework_Assert as Assert;
 use Hautelook\Cart;
+use Hautelook\Product;
 
 /**
  * Features context.
  */
 class FeatureContext extends BehatContext
 {
-
+    /**
+     * @var Cart
+     */
     private $cart;
 
     /**
@@ -48,7 +51,8 @@ class FeatureContext extends BehatContext
      */
     public function iAddADollarItemNamed($dollars, $product_name)
     {
-        throw new PendingException();
+        $product = new Product($dollars, $product_name);
+        $this->cart->addProduct($product);
     }
     
     /**
@@ -56,7 +60,8 @@ class FeatureContext extends BehatContext
      */
     public function iAddADollarItemWithWeight($dollars, $lb, $product_name)
     {
-        throw new PendingException();
+        $product = new Product($dollars, $product_name, $lb);
+        $this->cart->addProduct($product);
     }
     
     /**
@@ -64,7 +69,7 @@ class FeatureContext extends BehatContext
      */
     public function myTotalShouldBeDollars($total)
     {
-        throw new PendingException();
+        Assert::assertEquals($this->cart->subtotal(true), $total);
     }
 
     /**
@@ -72,7 +77,8 @@ class FeatureContext extends BehatContext
      */
     public function myQuantityOfProductsShouldBe($product_name, $quantity)
     {
-        throw new PendingException();
+        $foundQuantity = $this->cart->quantityByProduct($product_name);
+        Assert::assertEquals($foundQuantity, $quantity);
     }
     
 
@@ -81,7 +87,9 @@ class FeatureContext extends BehatContext
      */
     public function iHaveACartWithADollarItem($item_cost, $product_name)
     {
-        throw new PendingException();
+        $this->iHaveAnEmptyCart();
+        $product = new Product($item_cost, $product_name);
+        $this->cart->addProduct($product);
     }
 
     /**
@@ -89,7 +97,8 @@ class FeatureContext extends BehatContext
      */
     public function iApplyAPercentCouponCode($discount)
     {
-        throw new PendingException();
+        $coupon = new \Hautelook\CouponPercentOff($discount);
+        $this->cart->applyCoupon($coupon);
     }
 
     /**
