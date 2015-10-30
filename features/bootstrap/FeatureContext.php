@@ -7,7 +7,10 @@ use Behat\Behat\Context\ClosuredContextInterface,
 use Behat\Gherkin\Node\PyStringNode,
     Behat\Gherkin\Node\TableNode;
 use PHPUnit_Framework_Assert as Assert;
-use Hautelook\Cart;
+use Hautelook\Cart,
+    Hautelook\Product,
+    Hautelook\Coupon,
+    Hautelook\Weight;
 
 /**
  * Features context.
@@ -40,7 +43,9 @@ class FeatureContext extends BehatContext
      */
     public function mySubtotalShouldBeDollars($subtotal)
     {
-        Assert::assertEquals($subtotal, $this->cart->subtotal());
+       $check = isset($this->coupon);
+	   $this->coupon = $check ? $this->coupon : new Coupon(); 
+       Assert::assertEquals($subtotal, $this->coupon->calculate($this->cart));
     }
 
     /**
@@ -48,23 +53,62 @@ class FeatureContext extends BehatContext
      */
     public function iAddADollarItemNamed($dollars, $product_name)
     {
-        throw new PendingException();
+    	$pretotal = $this->cart->subtotal();
+        $discount = $this->cart->getDiscount();
+    	$this->cart->addProduct(new Product($product_name, $dollars));
+    	Assert::assertEquals($this->cart->subtotal(), $pretotal + ($dollars - $discount));
     }
-    
+
     /**
      * @When /^I add a "([^"]*)" dollar "([^"]*)" lb item named "([^"]*)"$/
      */
     public function iAddADollarItemWithWeight($dollars, $lb, $product_name)
     {
-        throw new PendingException();
+        $this->product = new Product($product_name, $dollars, $lb);
+        $this->cart->addProduct($this->product);
+        Assert::assertInstanceOf(get_class($this->product), $this->product->setWeight($lb));
     }
-    
+
     /**
      * @Then /^My total should be "([^"]*)" dollars$/
      */
     public function myTotalShouldBeDollars($total)
     {
-        throw new PendingException();
+
+        $subtotal = $this->cart->subtotal();
+        $shippingCost = (int)0;
+
+        // When order is under $100,
+        $passedOrderUnder100Test = $subtotal < 100;
+        // and all items under 10 lb,
+        $products = $this->cart->getProducts();
+        foreach ($products as $key => $value) {
+            $weights[] = $value->getWeight() < 10;
+        }
+        $passedLbsUnder10Test = count(array_filter($weights)) == count($products);
+            // then shipping is $5 flat
+            if($passedOrderUnder100Test && $passedLbsUnder10Test){
+                $shippingCost = 5;
+            }
+
+        // When order is $100 or more,
+        $passedOrderOver100Test = $subtotal > 100;
+        // and each individual item is under 10 lb,
+        $passedLbsUnder10Test = $passedLbsUnder10Test;
+            // then shipping is free
+            if($passedOrderOver100Test && $passedLbsUnder10Test){
+                $shippingCost = 0;
+            }
+
+        // Items over 10 lb
+       foreach ($products as $key => $value) {
+            if($value->getWeight() > 10){
+                // always cost $20 each to ship
+                $shippingCost += 20;
+            }
+        }
+
+        Assert::assertEquals($total, $subtotal + $shippingCost);
     }
 
     /**
@@ -72,16 +116,26 @@ class FeatureContext extends BehatContext
      */
     public function myQuantityOfProductsShouldBe($product_name, $quantity)
     {
-        throw new PendingException();
+    	foreach($this->cart->getProducts() as $product){
+    		if($product->getName() == $product_name){
+    			$hits[] = $product;
+    		}
+    	}
+    	Assert::assertEquals($quantity, count($hits));
     }
-    
+
 
     /**
      * @Given /^I have a cart with a "([^"]*)" dollar item named "([^"]*)"$/
      */
     public function iHaveACartWithADollarItem($item_cost, $product_name)
     {
-        throw new PendingException();
+    	$this->iHaveAnEmptyCart();
+    	$item = new Product($product_name, $item_cost);
+    	$this->cart->addProduct($item);
+    	foreach($this->cart->getProducts() as $product){
+    		Assert:assertContains($product->getName(), $product_name);
+    	}
     }
 
     /**
@@ -89,7 +143,9 @@ class FeatureContext extends BehatContext
      */
     public function iApplyAPercentCouponCode($discount)
     {
-        throw new PendingException();
+       $this->coupon = new Coupon($discount);
+       $total = $this->coupon->calculate($this->cart);
+	   Assert::assertLessThan($this->cart->subtotal(), $total);
     }
 
     /**
